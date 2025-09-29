@@ -1,0 +1,124 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia de Chile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #003087;
+            color: white;
+            text-align: center;
+            padding: 2em;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        section {
+            max-width: 800px;
+            margin: 2em auto;
+            padding: 1em;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #003087;
+            border-bottom: 2px solid #d32f2f;
+            padding-bottom: 0.5em;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1em 0;
+        }
+        p {
+            line-height: 1.6;
+        }
+        footer {
+            text-align: center;
+            padding: 1em;
+            background-color: #003087;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Historia de Chile</h1>
+    </header>
+
+    <section>
+        <h2>Período Precolombino</h2>
+        <img src="images/historia1.jpg" alt="Cultura precolombina en Chile">
+        <p>Antes de la llegada de los españoles, Chile estaba habitado por diversos pueblos indígenas, como los mapuches, atacameños y diaguitas. Estas culturas desarrollaron complejos sistemas agrícolas y sociales adaptados a sus entornos.</p>
+    </section>
+
+    <section>
+        <h2>La Conquista Española</h2>
+        <img src="images/historia2.jpg" alt="Conquista española en Chile">
+        <p>En el siglo XVI, los españoles llegaron a Chile, liderados por Pedro de Valdivia. La resistencia mapuche marcó un largo período de conflictos, dando lugar a la Guerra de Arauco.</p>
+    </section>
+
+    <section>
+        <h2>Independencia de Chile</h2>
+        <img src="images/historia3.jpg" alt="Independencia de Chile">
+        <p>El proceso de independencia comenzó en 1810 con la Primera Junta de Gobierno y culminó en 1818 con la proclamación de la independencia, liderada por figuras como Bernardo O'Higgins.</p>
+    </section>
+
+    <footer>
+        <p>Presentación sobre la Historia de Chile - 2025</p>
+    </footer>
+</body>
+</html>
